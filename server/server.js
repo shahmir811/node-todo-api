@@ -31,6 +31,19 @@ app.post('/todos', (req, res) => {
 });
 
 // ***************************************************** //
+// GET request to get all todos
+app.get('/todos', (req, res) => {
+  Todo.find().then((todos) => {
+    //res.send(todos); // not using (also not recommended) because it returns an Array
+    res.send({todos});
+
+  }).catch((err) => {
+    res.status(400).send(err);
+
+  });
+
+
+});
 
 
 
