@@ -4,8 +4,16 @@ const request = require('supertest');
 const {app} = require('./../server');
 const {Todo} = require('./../models/Todo');
 
-beforeEach((done) => { //beforeEach is a testing lifecycle
-  Todo.remove({}).then(() => done()); // no {} means no return
+const seedingTodos = [
+  { text: 'First test todo' },
+  { text: 'Second test todo' }
+];
+
+beforeEach((done) => { //beforeEach is a testing lifecycle. Removes all the Todos before starting the test
+  Todo.remove({}).then(() => {
+    return Todo.insertMany(seedingTodos) // insertMany takes an array and inserts them into the collection. we place return so that we can chain callbacks
+
+  }).then(() => done()); // no {} means no return
 });
 
 
@@ -26,7 +34,7 @@ describe('POST /todos', () => {
           return done(err); //STOPs the function execution
         }
 
-        Todo.find().then((todos) => {
+        Todo.find({text}).then((todos) => {
           expect(todos.length).toBe(1);
           expect(todos[0].text).toBe(text);
           done();
@@ -54,7 +62,7 @@ describe('POST /todos', () => {
         }
 
         Todo.find().then((todos) => {
-          expect(todos.length).toBe(0); // toBe(0) means no data has been saved to DB
+          expect(todos.length).toBe(2); // toBe(0) means no data has been saved to DB
           done();
         }).catch((err) => {
           return done(err);
@@ -66,3 +74,18 @@ describe('POST /todos', () => {
 
 
 }); //describe ENDs
+
+
+describe('GET /todos', () => {
+  it('should get all todos', (done) => {
+
+    request(app)
+      .get('/todos')
+      .expect(200)
+      .expect( (res) => {
+        expect(res.body.todos.length).toBe(2);
+      })
+      .end(done);
+
+  });
+});
