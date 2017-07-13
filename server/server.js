@@ -67,6 +67,31 @@ app.get('/todos/:id', (req, res) => {
   });
 
 });
+// ***************************************************** //
+// Delete request to delete a single todo
+
+app.delete('/todos/:id', (req, res) => {
+  var id = req.params.id;
+
+  if (!ObjectID.isValid(id)) { // ObjectID.isValid(id) return true or false
+    return res.status(404).send();
+  }
+
+  Todo.findByIdAndRemove(id).then((todo) => {
+    if(!todo) {
+      return res.status(404).send();
+    }
+
+    res.send({todo}); // if todo is found
+
+  }).catch((err) => {
+    return res.status(400).send();
+  });
+
+
+});
+
+
 
 // ***************************************************** //
 app.listen(port, () => {
