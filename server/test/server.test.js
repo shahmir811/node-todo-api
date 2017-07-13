@@ -6,8 +6,8 @@ const {app} = require('./../server');
 const {Todo} = require('./../models/Todo');
 
 const seedingTodos = [
-  { _id: new ObjectID(), text: 'First test todo' },
-  { _id: new ObjectID(), text: 'Second test todo' }
+  { _id: new ObjectID(), text: 'First test todo', completed: false, completedAt: null },
+  { _id: new ObjectID(), text: 'Second test todo', completed: true, completedAt: 12345 }
 ];
 
 beforeEach((done) => { //beforeEach is a testing lifecycle. Removes all the Todos before starting the test
@@ -172,5 +172,52 @@ describe('DELETE /todos/:id', () => {
       .expect(404)
       .end(done);
   });
+
+});
+
+//Test cases for update/patch
+describe('PATCH /todos/:id', () => {
+
+  it('should update the todo', (done) => {
+    var hexId = seedingTodos[0]._id.toHexString();
+    var text = 'This should be the new text';
+
+    request(app)
+      .patch(`/todos/${hexId}`)
+      .send({
+        completed: true,
+        text
+      }) //supertest will convert it into JSON
+      .expect(200)
+      .expect( (res) => {
+        expect(res.body.todo.text).toBe(text);
+        expect(res.body.todo.completed).toBe(true);
+        expect(res.body.todo.completedAt).toBeA('number');
+      })
+      .end(done);
+
+  });//it ENDs
+
+
+  it('should clear the completedAt when todo is set to false', (done) => {
+    var hexId = seedingTodos[1]._id.toHexString();
+    var text = 'This should be the new text again';
+
+    request(app)
+      .patch(`/todos/${hexId}`)
+      .send({
+        completed: false,
+        text
+      }) //supertest will convert it into JSON
+      .expect(200)
+      .expect( (res) => {
+        expect(res.body.todo.text).toBe(text);
+        expect(res.body.todo.completed).toBe(false);
+        expect(res.body.todo.completedAt).toNotExist();
+      })
+      .end(done);
+
+  });//it ENDs
+
 
 });
