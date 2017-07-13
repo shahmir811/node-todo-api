@@ -8,7 +8,7 @@ var { User } = require('./models/User');
 
 var app = express();
 
-var port = process.env.PORT || 3000;
+const port = process.env.PORT || 3000;
 app.use(bodyParser.json()); //Using Middleware
 
 // ***************************************************** //
