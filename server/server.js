@@ -6,6 +6,7 @@ const { ObjectID } = require('mongodb');
 var { mongoose } = require('./db/mongoose');
 var { Todo } = require('./models/Todo');
 var { User } = require('./models/User');
+var { authenticate } = require('./middleware/authenticate');
 
 var app = express();
 
@@ -14,7 +15,7 @@ app.use(bodyParser.json()); //Using Middleware
 
 // ***************************************************** //
 
-// Post Request for creating a POST
+// Post Request for creating a todo
 app.post('/todos', (req, res) => {
   var newTodo = new Todo({
     text: req.body.text,
@@ -112,15 +113,46 @@ app.patch('/todos/:id', (req, res) => {
 
   //findByIdAndUpdate(filter, update, options, callback)
   Todo.findByIdAndUpdate(id, { $set: body }, {new: true}).then( (todo) => { // { $set: body } means update the old body(text and completed). {new: true} will give us the updated value
-    if (!todo) {
-      return res.status(404).send();
-    }
+  if (!todo) {
+    return res.status(404).send();
+  }
 
-    res.send({todo});
+  res.send({todo});
+
+}).catch((err) => {
+  return res.status(400).send();
+});
+
+});
+
+// ***************************************************** //
+// Sign Up
+
+app.post('/users', (req, res) => {
+
+  var body = _.pick(req.body, ['email', 'password']);
+
+  //newUser.generateAuthToken() // is responsible to adding a token to individual user document, saving that and returning a token to the user.
+
+  var newUser = new User(body);
+
+  newUser.save().then( (user) => {
+    return user.generateAuthToken();
+
+  }).then((token) => {
+    res.header('x-auth', token).send(newUser); //x- means that you are creating a custom header. Setting the header
 
   }).catch((err) => {
-    return res.status(400).send();
+    res.status(400).send(err);
+
   });
+
+});
+
+
+// ***************************************************** //
+app.get('/users/me', authenticate, (req, res) => {
+  res.send(req.user);
 
 });
 
