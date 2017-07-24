@@ -33,14 +33,14 @@ var UserSchema = new mongoose.Schema({
   }]
 });
 
-UserSchema.methods.toJSON = function () { // Limit the return values
+UserSchema.methods.toJSON = function () { // Limit the return values. methods used for instance methods (like with new User())
   var newUser = this;
   var newUserObject = newUser.toObject(); // toObject() takes the mongoose variable (newUser) and converting it into regular object where only the properties available exists
 
   return _.pick(newUserObject, ['_id', 'email']); // After successfully signs, return id and email
 };
 
-UserSchema.methods.generateAuthToken = function () { // Haven't used arrow function because it does't bind this keyword
+UserSchema.methods.generateAuthToken = function () { // Haven't used arrow function because it does't bind this keyword. methods used for instance methods (like with new User())
   var newUser = this; //instance method
   var access = 'auth';
   var token = jwt.sign({
@@ -59,7 +59,7 @@ UserSchema.methods.generateAuthToken = function () { // Haven't used arrow funct
 
 }; // UserSchema.methods,generateAuthToken() ENDs
 
-UserSchema.statics.findByToken = function(token) { // statics is an object just like methods, althought everything you add on to it turns into a model method as opposed to instance method
+UserSchema.statics.findByToken = function(token) { // statics is an object just like methods, althought everything you add on to it turns into a model method as opposed to instance method. For statics methods, you can call it directly without instantiating the object (like no need of new User())
 
   var User = this; //Model method
   var decoded;
