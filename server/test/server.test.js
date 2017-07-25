@@ -16,31 +16,31 @@ beforeEach(populateTodos);
 
 describe('POST /todos', () => {
   it('should create a new todo', (done) => {
-    this.timeout(15000);
+    // this.timeout(15000);
     var text = 'Testing POST todos';
 
     request(app)
-      .post('/todos')
-      .send({text}) //supertest will convert it into JSON
-      .expect(200)
-      .expect( (res) => {
-        expect(res.body.text).toBe(text);
+    .post('/todos')
+    .send({text}) //supertest will convert it into JSON
+    .expect(200)
+    .expect( (res) => {
+      expect(res.body.text).toBe(text);
+    })
+    .end( (err, res) => { // Check what get store in mongoDB collection
+
+      if(err) {
+        return done(err); //STOPs the function execution
+      }
+
+      Todo.find({text}).then((todos) => {
+        expect(todos.length).toBe(1);
+        expect(todos[0].text).toBe(text);
+        done();
+      }).catch((err) => {
+        return done(err);
       })
-      .end( (err, res) => { // Check what get store in mongoDB collection
 
-        if(err) {
-          return done(err); //STOPs the function execution
-        }
-
-        Todo.find({text}).then((todos) => {
-          expect(todos.length).toBe(1);
-          expect(todos[0].text).toBe(text);
-          done();
-        }).catch((err) => {
-          return done(err);
-        })
-
-      })
+    })
 
 
   });// it ENDs
@@ -50,23 +50,23 @@ describe('POST /todos', () => {
   it('should not create Todos with invalid data', (done) => {
 
     request(app)
-      .post('/todos')
-      .send({text: ''}) //supertest will convert it into JSON
-      .expect(400)
-      .end( (err, res) => {
+    .post('/todos')
+    .send({text: ''}) //supertest will convert it into JSON
+    .expect(400)
+    .end( (err, res) => {
 
-        if(err) {
-          return done(err); //STOPs the function execution
-        }
+      if(err) {
+        return done(err); //STOPs the function execution
+      }
 
-        Todo.find().then((todos) => {
-          expect(todos.length).toBe(2); // toBe(0) means no data has been saved to DB
-          done();
-        }).catch((err) => {
-          return done(err);
-        })
-
+      Todo.find().then((todos) => {
+        expect(todos.length).toBe(2); // toBe(0) means no data has been saved to DB
+        done();
+      }).catch((err) => {
+        return done(err);
       })
+
+    })
 
   });
 
@@ -78,12 +78,12 @@ describe('GET /todos', () => {
   it('should get all todos', (done) => {
 
     request(app)
-      .get('/todos')
-      .expect(200)
-      .expect( (res) => {
-        expect(res.body.todos.length).toBe(2);
-      })
-      .end(done);
+    .get('/todos')
+    .expect(200)
+    .expect( (res) => {
+      expect(res.body.todos.length).toBe(2);
+    })
+    .end(done);
 
   });
 });
@@ -93,12 +93,12 @@ describe('GET /todos/:id', () => {
   it('should return todo doc', (done) => {
 
     request(app)
-      .get(`/todos/${seedingTodos[0]._id.toHexString()}`)// need to convert ObjectID to string via toHexString()
-      .expect(200)
-      .expect( (res) => {
-        expect(res.body.todo.text).toBe(seedingTodos[0].text);
-      })
-      .end(done);
+    .get(`/todos/${seedingTodos[0]._id.toHexString()}`)// need to convert ObjectID to string via toHexString()
+    .expect(200)
+    .expect( (res) => {
+      expect(res.body.todo.text).toBe(seedingTodos[0].text);
+    })
+    .end(done);
 
   });
 
@@ -106,9 +106,9 @@ describe('GET /todos/:id', () => {
     var hexId = new ObjectID().toHexString();
 
     request(app)
-      .get(`/todos/${hexId}`)
-      .expect(404)
-      .end(done);
+    .get(`/todos/${hexId}`)
+    .expect(404)
+    .end(done);
 
   });
 
@@ -116,9 +116,9 @@ describe('GET /todos/:id', () => {
     var id = '59660f315ceefe28d812b00f1';
 
     request(app)
-      .get(`/todos/${id}.toHexString()`)
-      .expect(404)
-      .end(done);
+    .get(`/todos/${id}.toHexString()`)
+    .expect(404)
+    .end(done);
 
   });
 
@@ -131,24 +131,24 @@ describe('DELETE /todos/:id', () => {
     var hexId = seedingTodos[1]._id.toHexString();
 
     request(app)
-      .delete(`/todos/${hexId}`)
-      .expect(200)
-      .expect((res) => {
-        expect(res.body.todo._id).toBe(hexId);
-      })
-      .end((err, res) => {
-        if (err) {
-          return done(err);
-        }
+    .delete(`/todos/${hexId}`)
+    .expect(200)
+    .expect((res) => {
+      expect(res.body.todo._id).toBe(hexId);
+    })
+    .end((err, res) => {
+      if (err) {
+        return done(err);
+      }
 
-        Todo.findById(hexId).then((todo) => {
-          expect(todo).toNotExist();
-          done();
-        }).catch((e) => {
-          return done(err);
-        });
-
+      Todo.findById(hexId).then((todo) => {
+        expect(todo).toNotExist();
+        done();
+      }).catch((e) => {
+        return done(err);
       });
+
+    });
   });
 
 
@@ -156,18 +156,18 @@ describe('DELETE /todos/:id', () => {
     var hexId = new ObjectID().toHexString();
 
     request(app)
-      .delete(`/todos/${hexId}`)
-      .expect(404)
-      .end(done);
+    .delete(`/todos/${hexId}`)
+    .expect(404)
+    .end(done);
   });
 
   it('should return 404 for invalid ObjectID', (done) => {
     var id = '59660f315ceefe28d812b00f1';
 
     request(app)
-      .delete(`/todos/${id}.toHexString()`)
-      .expect(404)
-      .end(done);
+    .delete(`/todos/${id}.toHexString()`)
+    .expect(404)
+    .end(done);
   });
 
 });
@@ -180,18 +180,18 @@ describe('PATCH /todos/:id', () => {
     var text = 'This should be the new text';
 
     request(app)
-      .patch(`/todos/${hexId}`)
-      .send({
-        completed: true,
-        text
-      }) //supertest will convert it into JSON
-      .expect(200)
-      .expect( (res) => {
-        expect(res.body.todo.text).toBe(text);
-        expect(res.body.todo.completed).toBe(true);
-        expect(res.body.todo.completedAt).toBeA('number');
-      })
-      .end(done);
+    .patch(`/todos/${hexId}`)
+    .send({
+      completed: true,
+      text
+    }) //supertest will convert it into JSON
+    .expect(200)
+    .expect( (res) => {
+      expect(res.body.todo.text).toBe(text);
+      expect(res.body.todo.completed).toBe(true);
+      expect(res.body.todo.completedAt).toBeA('number');
+    })
+    .end(done);
 
   });//it ENDs
 
@@ -201,18 +201,18 @@ describe('PATCH /todos/:id', () => {
     var text = 'This should be the new text again';
 
     request(app)
-      .patch(`/todos/${hexId}`)
-      .send({
-        completed: false,
-        text
-      }) //supertest will convert it into JSON
-      .expect(200)
-      .expect( (res) => {
-        expect(res.body.todo.text).toBe(text);
-        expect(res.body.todo.completed).toBe(false);
-        expect(res.body.todo.completedAt).toNotExist();
-      })
-      .end(done);
+    .patch(`/todos/${hexId}`)
+    .send({
+      completed: false,
+      text
+    }) //supertest will convert it into JSON
+    .expect(200)
+    .expect( (res) => {
+      expect(res.body.todo.text).toBe(text);
+      expect(res.body.todo.completed).toBe(false);
+      expect(res.body.todo.completedAt).toNotExist();
+    })
+    .end(done);
 
   });//it ENDs
 
@@ -224,28 +224,28 @@ describe('GET /users/me', () => {
   it('should return user if authenticated', (done) => {
 
     request(app)
-      .get('/users/me')
-      .set('x-auth', seedingUsers[0].tokens[0].token) // setting header
-      .expect(200)
-      .expect( (res) => {
-        expect(res.body._id).toBe(seedingUsers[0]._id.toHexString());
-        expect(res.body.email).toBe(seedingUsers[0].email);
-      })
-      .end(done);
+    .get('/users/me')
+    .set('x-auth', seedingUsers[0].tokens[0].token) // setting header
+    .expect(200)
+    .expect( (res) => {
+      expect(res.body._id).toBe(seedingUsers[0]._id.toHexString());
+      expect(res.body.email).toBe(seedingUsers[0].email);
+    })
+    .end(done);
 
   }); // it ENDs
 
   it('should return 401 if not authenticated', (done) => {
 
     request(app)
-      .get('/users/me')
-      //.set('x-auth', seedingUsers[0].tokens[0].token) // setting header
-      .expect(401)
-      .expect( (res) => {
-        expect(res.body).toEqual({});
-        //expect(res.body.email).toBe(seedingUsers[0].email);
-      })
-      .end(done);
+    .get('/users/me')
+    //.set('x-auth', seedingUsers[0].tokens[0].token) // setting header
+    .expect(401)
+    .expect( (res) => {
+      expect(res.body).toEqual({});
+      //expect(res.body.email).toBe(seedingUsers[0].email);
+    })
+    .end(done);
 
   }); // it ENDs
 
@@ -260,46 +260,101 @@ describe('POST /users', () => {
     var password = '123mnb!';
 
     request(app)
-      .post('/users')
-      .send({email, password})
-      .expect(200)
-      .expect((res) => {
-        expect(res.headers['x-auth']).toExist();
-        expect(res.body._id).toExist();
-        expect(res.body.email).toBe(email);
-      })
-      .end((err) => {
-        if (err) {
-          return done(err);
-        }
+    .post('/users')
+    .send({email, password})
+    .expect(200)
+    .expect((res) => {
+      expect(res.headers['x-auth']).toExist();
+      expect(res.body._id).toExist();
+      expect(res.body.email).toBe(email);
+    })
+    .end((err) => {
+      if (err) {
+        return done(err);
+      }
 
-        User.findOne({email}).then((user) => {
-          expect(user).toExist();
-          expect(user.password).toNotBe(password);
-          done();
-        });
-      });
+      User.findOne({email}).then((user) => {
+        expect(user).toExist();
+        expect(user.password).toNotBe(password);
+        done();
+      }).catch((err) => done(err));
+
+    });
   });
 
   it('should return validation errors if request invalid', (done) => {
     request(app)
-      .post('/users')
-      .send({
-        email: 'and',
-        password: '123'
-      })
-      .expect(400)
-      .end(done);
+    .post('/users')
+    .send({
+      email: 'and',
+      password: '123'
+    })
+    .expect(400)
+    .end(done);
   });
 
   it('should not create user if email in use', (done) => {
     request(app)
-      .post('/users')
-      .send({
-        email: seedingUsers[0].email,
-        password: 'Password123!'
-      })
-      .expect(400)
-      .end(done);
+    .post('/users')
+    .send({
+      email: seedingUsers[0].email,
+      password: 'Password123!'
+    })
+    .expect(400)
+    .end(done);
   });
 });
+
+describe('POST /users/login', () => {
+
+  it('should login user and return auth token', (done) => {
+    request(app)
+      .post('/users/login')
+      .send({
+        email: seedingUsers[1].email,
+        password: seedingUsers[1].password
+      })
+      .expect(200)
+      .expect((res) => {
+        expect(res.headers['x-auth']).toExist();
+      })
+      .end((err, res) => {
+        if (err) {
+          return done(err);
+        }
+
+        User.findById(seedingUsers[1]._id).then((user) => {
+          expect(user.tokens[0]).toInclude({ // toInclude means that atleast it has access and token
+            access: 'auth',
+            token: res.headers['x-auth']
+          });
+          done();
+        }).catch((e) => done(e));
+      });
+  });
+
+  it('should reject invalid login', (done) => {
+    request(app)
+      .post('/users/login')
+      .send({
+        email: seedingUsers[1].email,
+        password: 123456
+      })
+      .expect(400)
+      .expect((res) => {
+        expect(res.headers['x-auth']).toNotExist();
+      })
+      .end((err, res) => {
+        if (err) {
+          return done(err);
+        }
+
+        User.findById(seedingUsers[1]._id).then((user) => {
+          expect(user.tokens.length).toBe(0);
+          done();
+        }).catch((e) => done(e));
+      });
+  });
+
+
+});// describe ENDs

@@ -82,6 +82,27 @@ UserSchema.statics.findByToken = function(token) { // statics is an object just 
 
 };
 
+UserSchema.statics.findByCredentials = function (email, password) {
+  var User = this;
+
+  return User.findOne({email}).then((user) => {
+    if (!user) {
+      return Promise.reject('no user found');
+    }
+
+    return new Promise((resolve, reject) => { // used Promises beacuse all bcrypt methods are callbacks
+      // Use bcrypt.compare to compare password and user.password
+      bcrypt.compare(password, user.password, (err, res) => {
+        if (res) {
+          resolve(user);
+        } else {
+          reject('Password Dont match');
+        }
+      });
+    });
+  });
+};
+
 UserSchema.pre('save', function(next) { // pre() executes before save event occurs. In other words, we need to hash the password before saving it into DB
   var user = this;
 

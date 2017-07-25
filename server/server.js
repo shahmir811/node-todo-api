@@ -1,4 +1,4 @@
-require('./config/config');
+// require('./config/config');
 
 const _ = require('lodash');
 const express = require('express');
@@ -157,6 +157,23 @@ app.get('/users/me', authenticate, (req, res) => {
   res.send(req.user);
 
 });
+
+// ***************************************************** //
+// Logging IN
+app.post('/users/login', (req, res) => {
+  var body = _.pick(req.body, ['email', 'password']);
+
+  User.findByCredentials(body.email, body.password).then((user) => {
+    return user.generateAuthToken().then((token) => {
+      res.header('x-auth', token).send(user);
+    });
+  }).catch((e) => {
+    res.status(400).send(e);
+  });
+
+});
+
+
 
 
 // ***************************************************** //
