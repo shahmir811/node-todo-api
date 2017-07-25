@@ -173,7 +173,18 @@ app.post('/users/login', (req, res) => {
 
 });
 
+// ***************************************************** //
+// Logging OUT
+app.delete('/users/me/token', authenticate, (req, res) => { //we use middleware(authenticate). Only login users can access this route
+  req.user.removeToken(req.token).then(() => { //removeToken is an instance method
+    res.status(200).send();
 
+  }).catch((err) => {
+    res.status(400).send();
+    
+  });
+
+});
 
 
 // ***************************************************** //

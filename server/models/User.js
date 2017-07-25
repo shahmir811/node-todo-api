@@ -59,6 +59,18 @@ UserSchema.methods.generateAuthToken = function () { // Haven't used arrow funct
 
 }; // UserSchema.methods,generateAuthToken() ENDs
 
+UserSchema.methods.removeToken = function(token) { //instance method
+  var user = this;
+
+  return user.update({
+    $pull: {
+      tokens: {
+        token //it will match the coming token with the stored token and pull(remove) it from the array
+      }
+    }
+  });
+};
+
 UserSchema.statics.findByToken = function(token) { // statics is an object just like methods, althought everything you add on to it turns into a model method as opposed to instance method. For statics methods, you can call it directly without instantiating the object (like no need of new User())
 
   var User = this; //Model method
@@ -104,7 +116,7 @@ UserSchema.statics.findByCredentials = function (email, password) {
 };
 
 UserSchema.pre('save', function(next) { // pre() executes before save event occurs. In other words, we need to hash the password before saving it into DB
-  var user = this;
+  var user = this; //instance method
 
   if(user.isModified()) { //user.isModified() returns true/false. We only encrpt the password if it is modified
     bcrypt.genSalt(10, (err, salt) => {
