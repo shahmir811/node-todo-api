@@ -17,13 +17,17 @@ const seedingUsers = [{
 }, {
   _id: userTwoId,
   email: 'talhaHisham@example.com',
-  password: 'userTwoPass'
+  password: 'userTwoPass',
+  tokens: [{
+    access: 'auth',
+    token: jwt.sign({_id: userTwoId, access: 'auth'}, 'abc123').toString()
+  }]
 }];
 
 
 const seedingTodos = [
-  { _id: new ObjectID(), text: 'First test todo', completed: false, completedAt: null },
-  { _id: new ObjectID(), text: 'Second test todo', completed: true, completedAt: 12345 }
+  { _id: new ObjectID(), text: 'First test todo', completed: false, completedAt: null, _creator: userOneId },
+  { _id: new ObjectID(), text: 'Second test todo', completed: true, completedAt: 12345, _creator: userTwoId }
 ];
 
 const populateTodos = (done) => { //beforeEach is a testing lifecycle. Removes all the Todos before starting the test

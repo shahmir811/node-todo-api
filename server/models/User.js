@@ -118,7 +118,7 @@ UserSchema.statics.findByCredentials = function (email, password) {
 UserSchema.pre('save', function(next) { // pre() executes before save event occurs. In other words, we need to hash the password before saving it into DB
   var user = this; //instance method
 
-  if(user.isModified()) { //user.isModified() returns true/false. We only encrpt the password if it is modified
+  if(user.isModified('password')) { //user.isModified() returns true/false. We only encrpt the password if it is modified
     bcrypt.genSalt(10, (err, salt) => {
       bcrypt.hash(user.password, salt, (err, hash) => {
         //we have to store the hash value in database

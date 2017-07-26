@@ -18,11 +18,12 @@ app.use(bodyParser.json()); //Using Middleware
 // ***************************************************** //
 
 // Post Request for creating a todo
-app.post('/todos', (req, res) => {
+app.post('/todos', authenticate, (req, res) => {
   var newTodo = new Todo({
     text: req.body.text,
     completed: req.body.completed,
-    completedAt: req.body.completedAt
+    completedAt: req.body.completedAt,
+    _creator: req.user._id
   });
 
   newTodo.save().then( (docs) => {
@@ -37,8 +38,10 @@ app.post('/todos', (req, res) => {
 
 // ***************************************************** //
 // GET request to get all todos
-app.get('/todos', (req, res) => {
-  Todo.find().then((todos) => {
+app.get('/todos', authenticate, (req, res) => {
+  Todo.find({
+    _creator: req.user._id
+  }).then((todos) => {
     //res.send(todos); // not using (also not recommended) because it returns an Array
     res.send({todos});
 
@@ -51,14 +54,17 @@ app.get('/todos', (req, res) => {
 
 // ***************************************************** //
 // GET request to get a single todo
-app.get('/todos/:id', (req, res) => {
+app.get('/todos/:id', authenticate, (req, res) => {
   var id = req.params.id;
 
   if (!ObjectID.isValid(id)) { // ObjectID.isValid(id) return true or false
     return res.status(404).send();
   }
 
-  Todo.findById(id).then( (todo) => {
+  Todo.findOne({
+    _id: id,
+    _creator: req.user._id
+  }).then( (todo) => {
     if(!todo) {
       return res.status(404).send();
     }
@@ -74,14 +80,17 @@ app.get('/todos/:id', (req, res) => {
 // ***************************************************** //
 // Delete request to delete a single todo
 
-app.delete('/todos/:id', (req, res) => {
+app.delete('/todos/:id', authenticate, (req, res) => {
   var id = req.params.id;
 
   if (!ObjectID.isValid(id)) { // ObjectID.isValid(id) return true or false
     return res.status(404).send();
   }
 
-  Todo.findByIdAndRemove(id).then((todo) => {
+  Todo.findOneAndRemove({
+    _id: id,
+    _creator: req.user._id
+  }).then((todo) => {
     if(!todo) {
       return res.status(404).send();
     }
@@ -98,7 +107,7 @@ app.delete('/todos/:id', (req, res) => {
 // ***************************************************** //
 // Updating a todo
 // it uses patch method. PATCH method is used to update a record (recommended)
-app.patch('/todos/:id', (req, res) => {
+app.patch('/todos/:id', authenticate, (req, res) => {
   var id = req.params.id;
   var body = _.pick(req.body, ['text', 'completed']); // pick takes an oject and grabs only those properties that you want to change (like here we grab text and completed)
 
@@ -113,8 +122,13 @@ app.patch('/todos/:id', (req, res) => {
     body.completedAt = null;
   }
 
-  //findByIdAndUpdate(filter, update, options, callback)
-  Todo.findByIdAndUpdate(id, { $set: body }, {new: true}).then( (todo) => { // { $set: body } means update the old body(text and completed). {new: true} will give us the updated value
+  //findOneAndUpdate({filter}, {update}, {options}, callback)
+  Todo.findOneAndUpdate(
+    { _id: id, _creator: req.user._id},
+    { $set: body },
+    { new: true }
+
+  ).then( (todo) => { // { $set: body } means update the old body(text and completed). {new: true} will give us the updated value
   if (!todo) {
     return res.status(404).send();
   }
@@ -181,7 +195,7 @@ app.delete('/users/me/token', authenticate, (req, res) => { //we use middleware(
 
   }).catch((err) => {
     res.status(400).send();
-    
+
   });
 
 });
